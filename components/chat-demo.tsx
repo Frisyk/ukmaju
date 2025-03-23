@@ -3,14 +3,14 @@
 import { useChat, type UseChatOptions } from "ai/react";
 
 import { Chat } from "@/components/ui/chat";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 type ChatDemoProps = {
   initialMessages?: UseChatOptions["initialMessages"];
 };
 
 export function ChatDemo(props: ChatDemoProps) {
-  const router = useRouter(); // Inisialisasi router
+  // const router = useRouter(); // Inisialisasi router
   const {
     messages,
     input,
@@ -22,19 +22,6 @@ export function ChatDemo(props: ChatDemoProps) {
   } = useChat({
     ...props,
     onError: (err) => console.error("Chat Error:", err),
-    // onResponse: (response) => {
-    //   // Generate ID atau dapatkan dari response API jika ada
-    //   console.log(response.url);
-      
-    //   const chatId =  new Date().getTime();
-    //   router.push(`/chat/${chatId}`); // Redirect ke halaman chat dengan ID
-    // },
-    // onFinish: async (latestMessage) => {
-    //   // Cek apakah latestMessage memiliki ID dari API
-    //   if (latestMessage?.id) {
-    //     router.push(`/chat/${latestMessage.id}`); // Redirect ke halaman chat
-    //   }
-    // },
   });
 
   return (

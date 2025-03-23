@@ -69,7 +69,7 @@ interface ToolCall {
 interface ToolResult {
   state: "result"
   toolName: string
-  result: any
+  result: string
 }
 
 type ToolInvocation = PartialToolCall | ToolCall | ToolResult
