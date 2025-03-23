@@ -172,7 +172,9 @@ export function MessageInput({
         onPaste={onPaste}
         onKeyDown={onKeyDown}
         className={cn(
-          "z-10 w-full grow resize-none rounded-xl border border-input bg-background p-3 pr-24 text-sm ring-offset-background transition-[border] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+          "z-10 mb-5 w-full grow resize-none rounded-2xl border border-input dark:border-accent/20 bg-background/90 dark:bg-background/40 backdrop-blur-sm p-4 pr-24 text-sm ring-offset-background transition-all duration-200 shadow-md focus-visible:border-primary focus-visible:shadow-lg focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          "dark:focus-visible:shadow-[0_0_15px_rgba(var(--primary)/0.3)]",
+          "placeholder:text-muted-foreground/70 dark:placeholder:text-muted-foreground/50",
           showFileList && "pb-16",
           className
         )}
@@ -210,36 +212,21 @@ export function MessageInput({
       )}
 
       <div className="absolute right-3 top-3 z-20 flex gap-2">
-        {props.allowAttachments && (
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            className="h-8 w-8"
-            aria-label="Attach a file"
-            onClick={async () => {
-              const files = await showFileUploadDialog()
-              addFiles(files)
-            }}
-          >
-            <Paperclip className="h-4 w-4" />
-          </Button>
-        )}
         {isGenerating && stop ? (
           <Button
             type="button"
             size="icon"
-            className="h-8 w-8"
+            className="h-10 w-10 rounded-full shadow-md transition-all duration-200 hover:shadow-lg dark:bg-accent/80 dark:text-accent-foreground"
             aria-label="Stop generating"
             onClick={stop}
           >
-            <Square className="h-3 w-3 animate-pulse" fill="currentColor" />
+            <Square className="h-4 w-4 animate-pulse" fill="currentColor" />
           </Button>
         ) : (
           <Button
             type="submit"
             size="icon"
-            className="h-8 w-8 transition-opacity"
+            className="h-10 w-10 rounded-full shadow-md transition-all duration-200 hover:shadow-lg disabled:opacity-30 dark:disabled:bg-muted/20 disabled:cursor-not-allowed"
             aria-label="Send message"
             disabled={props.value === "" || isGenerating}
           >
@@ -315,24 +302,24 @@ function FileUploadOverlay({ isDragging }: FileUploadOverlayProps) {
   )
 }
 
-function showFileUploadDialog() {
-  const input = document.createElement("input")
+// function showFileUploadDialog() {
+//   const input = document.createElement("input")
 
-  input.type = "file"
-  input.multiple = true
-  input.accept = "*/*"
-  input.click()
+//   input.type = "file"
+//   input.multiple = true
+//   input.accept = "*/*"
+//   input.click()
 
-  return new Promise<File[] | null>((resolve) => {
-    input.onchange = (e) => {
-      const files = (e.currentTarget as HTMLInputElement).files
+//   return new Promise<File[] | null>((resolve) => {
+//     input.onchange = (e) => {
+//       const files = (e.currentTarget as HTMLInputElement).files
 
-      if (files) {
-        resolve(Array.from(files))
-        return
-      }
+//       if (files) {
+//         resolve(Array.from(files))
+//         return
+//       }
 
-      resolve(null)
-    }
-  })
-}
+//       resolve(null)
+//     }
+//   })
+// }

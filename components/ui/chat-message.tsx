@@ -9,12 +9,12 @@ import { FilePreview } from "@/components/ui/file-preview"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 
 const chatBubbleVariants = cva(
-  "group/message relative break-words rounded-lg p-3 text-sm sm:max-w-[70%]",
+  "group/message relative break-words rounded-2xl p-4 text-sm sm:max-w-[70%] shadow-md backdrop-blur-sm transition-all duration-200 ease-in-out",
   {
     variants: {
       isUser: {
-        true: "bg-primary text-primary-foreground",
-        false: "bg-muted text-foreground",
+        true: "bg-primary/90 text-primary-foreground border border-primary/30",
+        false: "bg-muted/80 text-foreground border border-border/40 dark:bg-muted/30 dark:border-accent/20",
       },
       animation: {
         none: "",
@@ -136,7 +136,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         </div>
 
         {role === "assistant" && actions ? (
-          <div className="absolute -bottom-4 right-2 flex space-x-1 rounded-lg border bg-background p-1 text-foreground opacity-0 transition-opacity group-hover/message:opacity-100">
+          <div className="absolute -bottom-4 right-2 flex space-x-1 rounded-lg border bg-background/90 backdrop-blur-sm p-1 text-foreground opacity-0 transition-opacity group-hover/message:opacity-100 shadow-md">
             {actions}
           </div>
         ) : null}

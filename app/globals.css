@@ -8,31 +8,44 @@ body {
 
 @layer base {
   :root {
-    --background: 176 100% 90%; /* #BAFFF2 */
-    --foreground: 256 28% 25%;  /* #332D4F */
-    --card: 176 100% 90%;       /* #BAFFF2 */
-    --card-foreground: 256 28% 25%; /* #332D4F */
-    --popover: 176 100% 90%;    /* #BAFFF2 */
-    --popover-foreground: 256 28% 25%; /* #332D4F */
-    --primary: 168 99% 40%;     /* #01CDA8 */
-    --primary-foreground: 176 100% 90%; /* #BAFFF2 */
-    --secondary: 256 28% 25%;   /* #332D4F */
-    --secondary-foreground: 176 100% 90%; /* #BAFFF2 */
-    --muted: 176 50% 80%;       /* Lebih gelap dari #BAFFF2 */
-    --muted-foreground: 256 28% 25%; /* #332D4F */
-    --accent: 176 100% 85%;      /* #45FFDD */
-    --accent-foreground: 256 28% 25%; /* #332D4F */
-    --destructive: 348 75% 58%; /* #e54461 */
-    --destructive-foreground: 176 100% 90%; /* #BAFFF2 */
-    --border: 176 50% 75%;       /* Lebih gelap dari #BAFFF2 */
-    --input: 176 50% 75%;        /* Lebih gelap dari #BAFFF2 */
-    --ring: 168 99% 40%;        /* #01CDA8 */
-    --chart-1: 168 99% 40%;     /* #01CDA8 */
-    --chart-2: 256 28% 25%;     /* #332D4F */
-    --chart-3: 166 100% 80%;    /* #45FFDD */
-    --chart-4: 61 40% 50%;      /* #b6b544 */
-    --chart-5: 348 75% 58%;     /* #e54461 */
-    --radius: 0.5rem;
+    --background: 176 100% 95%; /* Soft pastel cyan */
+    --foreground: 256 30% 20%;  /* Deep muted purple */
+    --card: 176 100% 95%;       
+    --card-foreground: 256 30% 20%; 
+    --primary: 155 80% 45%;     /* Soft teal */
+    --primary-foreground: 176 100% 95%;
+    --secondary: 256 30% 25%;   
+    --secondary-foreground: 176 100% 95%;
+    --muted: 176 50% 85%;       
+    --muted-foreground: 256 30% 20%;
+    --accent: 176 90% 85%;      
+    --accent-foreground: 256 30% 20%;
+    --destructive: 348 70% 60%; /* Soft coral red */
+    --destructive-foreground: 176 100% 95%;
+    --border: 176 50% 80%;       
+    --input: 176 50% 80%;        
+    --ring: 168 80% 45%;        
+    --radius: 0.75rem;
+  }
+  
+  .dark {
+    --background: 224 40% 10%;    /* Dark blue-gray */
+    --foreground: 213 31% 91%;    /* Soft white */
+    --card: 224 40% 12%;          /* Slightly lighter blue-gray */
+    --card-foreground: 213 31% 91%;
+    --primary: 261 84% 63%;       /* Electric violet */
+    --primary-foreground: 224 40% 8%;
+    --secondary: 330 100% 50%;    /* Vibrant magenta */
+    --secondary-foreground: 213 31% 91%;
+    --muted: 224 40% 15%;         /* Muted blue-gray */
+    --muted-foreground: 213 31% 70%;
+    --accent: 188 86% 53%;        /* Bright cyan */
+    --accent-foreground: 224 40% 8%;
+    --destructive: 0 84% 60%;     /* Bright red */
+    --destructive-foreground: 213 31% 91%;
+    --border: 224 40% 16%;        /* Border color */
+    --input: 224 40% 16%;         /* Input field color */
+    --ring: 261 84% 63%;          /* Matching primary */
   }
 }
 
@@ -41,6 +54,32 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
+}
+
+/* Custom scrollbar for dark theme */
+.dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: hsl(224 40% 8%);
+  border-radius: 5px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(261 84% 63% / 0.5);
+  border-radius: 5px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(261 84% 63% / 0.8);
+}
+
+/* Chat bubble hover effect */
+.group\/message:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
 }

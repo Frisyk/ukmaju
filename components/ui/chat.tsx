@@ -70,7 +70,7 @@ export function Chat({
           <Button
             size="icon"
             variant="ghost"
-            className="h-6 w-6"
+            className="h-6 w-6 text-foreground/70 hover:text-primary"
             onClick={() => onRateResponse(message.id, "thumbs-up")}
           >
             <ThumbsUp className="h-4 w-4" />
@@ -78,7 +78,7 @@ export function Chat({
           <Button
             size="icon"
             variant="ghost"
-            className="h-6 w-6"
+            className="h-6 w-6 text-foreground/70 hover:text-destructive"
             onClick={() => onRateResponse(message.id, "thumbs-down")}
           >
             <ThumbsDown className="h-4 w-4" />
@@ -96,41 +96,53 @@ export function Chat({
 
   return (
     <ChatContainer className={className}>
-      {isEmpty && append && suggestions ? (
-        <PromptSuggestions
-          label="Konsultasi bisnis mu dengan AI ✨"
-          append={append}
-          suggestions={suggestions}
-        />
-      ) : null}
+      {/* Visual decorations for dark theme */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden dark:block hidden">
+        <div className="absolute -left-20 top-32 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
+        <div className="absolute -right-20 top-56 h-96 w-96 rounded-full bg-secondary/20 blur-3xl" />
+        <div className="absolute bottom-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-accent/20 blur-3xl" />
+      </div>
 
-      {messages.length > 0 ? (
-        <ChatMessages messages={messages}>
-          <MessageList
-            messages={messages}
-            isTyping={isTyping}
-            messageOptions={messageOptions}
-          />
-        </ChatMessages>
-      ) : null}
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto pb-4 mb-2">
+          {isEmpty && append && suggestions ? (
+            <PromptSuggestions
+              label="Coba Prompt berikut ✨"
+              append={append}
+              suggestions={suggestions}
+            />
+          ) : null}
 
-      <ChatForm
-        className="mt-auto"
-        isPending={isGenerating || isTyping}
-        handleSubmit={handleSubmit}
-      >
-        {({ files, setFiles }) => (
-          <MessageInput
-            value={input}
-            onChange={handleInputChange}
-            allowAttachments
-            files={files}
-            setFiles={setFiles}
-            stop={stop}
-            isGenerating={isGenerating}
-          />
-        )}
-      </ChatForm>
+          {messages.length > 0 ? (
+            <ChatMessages messages={messages}>
+              <MessageList
+                messages={messages}
+                isTyping={isTyping}
+                messageOptions={messageOptions}
+              />
+            </ChatMessages>
+          ) : null}
+        </div>
+
+        <div className="mt-auto sticky bottom-0 z-10 bg-gradient-to-t from-background/95 via-background/80 to-transparent pt-6 pb-1 backdrop-blur-sm shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+          <ChatForm
+            isPending={isGenerating || isTyping}
+            handleSubmit={handleSubmit}
+          >
+            {({ files, setFiles }) => (
+              <MessageInput
+                value={input}
+                onChange={handleInputChange}
+                allowAttachments
+                files={files}
+                setFiles={setFiles}
+                stop={stop}
+                isGenerating={isGenerating}
+              />
+            )}
+          </ChatForm>
+        </div>
+      </div>
     </ChatContainer>
   )
 }
@@ -152,7 +164,7 @@ export function ChatMessages({
 
   return (
     <div
-      className="grid grid-cols-1 overflow-y-auto pb-4"
+      className="grid grid-cols-1 overflow-y-auto px-5 pb-4 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent h-full"
       ref={containerRef}
       onScroll={handleScroll}
       onTouchStart={handleTouchStart}
@@ -166,7 +178,7 @@ export function ChatMessages({
           <div className="sticky bottom-0 left-0 flex w-full justify-end">
             <Button
               onClick={scrollToBottom}
-              className="h-8 w-8 rounded-full ease-in-out animate-in fade-in-0 slide-in-from-bottom-1"
+              className="h-9 w-9 rounded-full shadow-lg ease-in-out animate-in fade-in-0 slide-in-from-bottom-1 dark:bg-accent/80 dark:text-accent-foreground"
               size="icon"
               variant="ghost"
             >
@@ -186,7 +198,10 @@ export const ChatContainer = forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("grid max-h-full w-full grid-rows-[1fr_auto]", className)}
+      className={cn(
+        "relative w-full h-full rounded-none sm:rounded-lg border-0 sm:border sm:border-border/40 bg-background/90 dark:bg-background/60 backdrop-blur-sm p-2 sm:p-4 shadow-xl", 
+        className
+      )}
       {...props}
     />
   )
