@@ -25,19 +25,18 @@ export const authOptions: NextAuthOptions = {
 
         try {
           await dbConnect();
-          const user = await User.findOne({ email: credentials.email });
+          // Cari user dan sertakan password untuk pemeriksaan
+          const user = await User.findOne({ email: credentials.email }).select('+password');
 
           if (!user) {
-            // Untuk demo, kita akan membuat user baru
-            const newUser = await User.create({
-              email: credentials.email,
-              name: credentials.email.split('@')[0],
-            });
-            return {
-              id: newUser._id.toString(),
-              email: newUser.email,
-              name: newUser.name,
-            };
+            throw new Error("Email tidak terdaftar");
+          }
+
+          // Verifikasi password
+          const isPasswordCorrect = await user.comparePassword(credentials.password);
+          
+          if (!isPasswordCorrect) {
+            throw new Error("Password salah");
           }
 
           return {
@@ -47,7 +46,7 @@ export const authOptions: NextAuthOptions = {
           };
         } catch (error) {
           console.error("Auth error:", error);
-          return null;
+          throw error;
         }
       },
     }),
@@ -57,6 +56,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/login",
+    // signUp: "/register",
   },
   callbacks: {
     async jwt({ token, user }) {

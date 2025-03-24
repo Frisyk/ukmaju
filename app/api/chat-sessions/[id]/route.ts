@@ -107,7 +107,6 @@ export async function PUT(
         updatedAt: new Date().toISOString()
       };
       
-      console.log("updatedSession", updatedSession);
       // @ts-expect-error - global augmentation
       global.MEMORY_STORAGE.sessions.set(id, updatedSession);
       
@@ -126,8 +125,6 @@ export async function PUT(
       { $set: data },
       { new: true }
     );
-
-    console.log("chatSession", chatSession);
     
     if (!chatSession) {
       return NextResponse.json({ error: 'Chat session not found' }, { status: 404 });

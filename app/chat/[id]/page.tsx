@@ -23,7 +23,6 @@ export default async function ChatPage(  { params }: { params: Promise<{ id: str
       redirect("/chat");
     }
     
-    console.log("Chat ID:", id); // Debugging ID
     
     // Cek apakah menggunakan ID UUID dari memory storage
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);

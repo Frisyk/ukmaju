@@ -5,6 +5,7 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Bot } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -55,15 +56,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gradient-to-b from-background/60 to-background dark:from-background/20 dark:to-background">
-      <div className="w-full max-w-md rounded-lg border border-border/40 bg-background/90 dark:bg-background/50 backdrop-blur-sm p-8 shadow-lg">
-        <div className="flex flex-col items-center gap-4 mb-8">
-          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Bot className="h-8 w-8 text-primary" />
+    <div className="flex h-screen w-full items-center justify-center bg-gradient-to-b from-background/60 to-background dark:from-background/20 dark:to-background p-4">
+      <div className="w-full max-w-md rounded-lg border border-border/40 bg-background/90 dark:bg-background/50 backdrop-blur-sm p-5 sm:p-8 shadow-lg">
+        <div className="flex flex-col items-center gap-4 mb-6 sm:mb-8">
+          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <Bot className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-semibold">UKM Maju</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-xl sm:text-2xl font-semibold">UKM Maju</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               AI Assistant untuk Pengembangan UKM Indonesia
             </p>
           </div>
@@ -127,6 +128,15 @@ export default function LoginPage() {
           >
             Google
           </button>
+        </div>
+
+        <div className="mt-6 text-center text-sm">
+          <p className="text-muted-foreground">
+            Belum punya akun?{" "}
+            <Link href="/register" className="font-medium text-primary hover:underline">
+              Daftar
+            </Link>
+          </p>
         </div>
       </div>
     </div>
