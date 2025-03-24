@@ -115,10 +115,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   const isUser = role === "user"
 
-  const formattedTime = createdAt?.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
+  const formattedTime = createdAt 
+    ? (typeof createdAt === 'string' 
+        ? new Date(createdAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+        : createdAt.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }))
+    : null;
 
   return (
     <div className={cn("flex flex-col", isUser ? "items-end" : "items-start")}>
@@ -142,9 +143,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         ) : null}
       </div>
 
-      {showTimeStamp && createdAt ? (
+      {showTimeStamp && formattedTime ? (
         <time
-          dateTime={createdAt.toISOString()}
+          dateTime={typeof createdAt === 'string' ? createdAt : createdAt?.toISOString()}
           className={cn(
             "mt-1 block px-1 text-xs opacity-50",
             animation !== "none" && "duration-500 animate-in fade-in-0"

@@ -5,7 +5,7 @@ import { ThemeProvider as NextThemesProvider, ThemeProviderProps } from "next-th
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return (
-    <NextThemesProvider {...props} attribute="class" defaultTheme="dark" enableSystem>
+    <NextThemesProvider {...props} attribute="class" defaultTheme="system" enableSystem>
       {children}
     </NextThemesProvider>
   )
