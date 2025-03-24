@@ -126,6 +126,14 @@ export async function POST(
     // Update sesi chat
     MEMORY_STORAGE.sessions.set(id, chatSession);
     
+    // Tambahkan log untuk membantu debugging
+    console.log(`[API] Pesan berhasil disimpan ke sesi ${id}:`, {
+      messageId: newMessage.id,
+      role: newMessage.role,
+      contentPreview: newMessage.content.substring(0, 30) + (newMessage.content.length > 30 ? '...' : ''),
+      totalMessages: chatSession.messagesCount
+    });
+    
     return NextResponse.json(newMessage);
   } catch (error) {
     console.error('Error adding message:', error);

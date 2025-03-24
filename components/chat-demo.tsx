@@ -115,8 +115,29 @@ export function ChatDemo(props: ChatDemoProps) {
           body: JSON.stringify({ message }),
         });
       }
+
+      // Sinkronisasi ke MongoDB jika menggunakan sessionId UUID
+      if (sessionId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionId)) {
+        synchronizeWithMongoDB(sessionId);
+      }
     } catch (error) {
       console.error('Error saving messages:', error);
+    }
+  };
+
+  // Fungsi untuk menyinkronkan data dari memory storage ke MongoDB
+  const synchronizeWithMongoDB = async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/chat-sessions/${sessionId}/sync-to-mongodb`, {
+        method: 'POST',
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Data berhasil disinkronkan ke MongoDB:', result);
+      }
+    } catch (error) {
+      console.error('Error sinkronisasi dengan MongoDB:', error);
     }
   };
 
@@ -200,6 +221,16 @@ export function ChatDemo(props: ChatDemoProps) {
     fetchMessages();
   }, [currentSessionId, setMessages]);
 
+  // Tambahkan useEffect untuk melakukan sinkronisasi saat halaman dimuat
+  useEffect(() => {
+    if (currentSessionId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentSessionId)) {
+      // Lakukan sinkronisasi ketika komponen dimuat
+      setTimeout(() => {
+        synchronizeWithMongoDB(currentSessionId);
+      }, 1000); // Tunggu sebentar untuk memastikan semua data telah dimuat
+    }
+  }, [currentSessionId]);
+
   const handleNewSession = () => {
     createNewSession();
   };
@@ -210,8 +241,24 @@ export function ChatDemo(props: ChatDemoProps) {
     }
   };
   
+  // Modifikasi fungsi handleSignOut untuk menyinkronkan data sebelum keluar
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/login' });
+    if (currentSessionId) {
+      try {
+        // Simpan pesan terakhir
+        await saveMessagesToDatabase(currentSessionId, messages);
+        
+        // Sinkronkan ke MongoDB jika menggunakan UUID
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentSessionId)) {
+          await synchronizeWithMongoDB(currentSessionId);
+        }
+      } catch (error) {
+        console.error('Error sebelum sign out:', error);
+      }
+    }
+    
+    // Lakukan sign out
+    signOut({ callbackUrl: '/' });
   };
 
   return (
