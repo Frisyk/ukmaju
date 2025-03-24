@@ -104,7 +104,7 @@ export function Chat({
       </div>
 
       <div className="flex flex-col h-full">
-        <div className="flex-1 overflow-y-auto pb-4 mb-2">
+        <div className="flex-1 overflow-y-auto pb-0 sm:pb-4 mb-0 sm:mb-2">
           {isEmpty && append && suggestions ? (
             <PromptSuggestions
               label="Coba Prompt berikut ✨"
@@ -124,7 +124,7 @@ export function Chat({
           ) : null}
         </div>
 
-        <div className="mt-auto sticky bottom-0 z-10 bg-gradient-to-t from-background/95 via-background/80 to-transparent pt-6 pb-1 backdrop-blur-sm shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+        <div className="mt-auto sticky bottom-0 z-10 bg-gradient-to-t from-background/95 via-background/80 to-transparent pt-2 sm:pt-6 pb-1 backdrop-blur-sm shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
           <ChatForm
             isPending={isGenerating || isTyping}
             handleSubmit={handleSubmit}
@@ -164,7 +164,7 @@ export function ChatMessages({
 
   return (
     <div
-      className="grid grid-cols-1 overflow-y-auto px-5 pb-4 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent h-full"
+      className="grid grid-cols-1 overflow-y-auto px-2 sm:px-5 pb-4 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent h-full"
       ref={containerRef}
       onScroll={handleScroll}
       onTouchStart={handleTouchStart}
@@ -178,11 +178,11 @@ export function ChatMessages({
           <div className="sticky bottom-0 left-0 flex w-full justify-end">
             <Button
               onClick={scrollToBottom}
-              className="h-9 w-9 rounded-full shadow-lg ease-in-out animate-in fade-in-0 slide-in-from-bottom-1 dark:bg-accent/80 dark:text-accent-foreground"
+              className="h-8 w-8 sm:h-9 sm:w-9 rounded-full shadow-lg ease-in-out animate-in fade-in-0 slide-in-from-bottom-1 dark:bg-accent/80 dark:text-accent-foreground"
               size="icon"
               variant="ghost"
             >
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         )}
@@ -199,7 +199,7 @@ export const ChatContainer = forwardRef<
     <div
       ref={ref}
       className={cn(
-        "relative w-full h-full rounded-none sm:rounded-lg border-0 sm:border sm:border-border/40 bg-background/90 dark:bg-background/60 backdrop-blur-sm p-2 sm:p-4 shadow-xl", 
+        "relative w-full h-full rounded-none sm:rounded-lg border-0 sm:border sm:border-border/40 bg-background/90 dark:bg-background/60 backdrop-blur-sm p-1 sm:p-2 md:p-4 shadow-xl", 
         className
       )}
       {...props}

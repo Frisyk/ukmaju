@@ -9,7 +9,7 @@ import { FilePreview } from "@/components/ui/file-preview"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 
 const chatBubbleVariants = cva(
-  "group/message relative break-words rounded-2xl p-4 text-sm sm:max-w-[70%] shadow-md backdrop-blur-sm transition-all duration-200 ease-in-out",
+  "group/message relative break-words rounded-2xl p-3 sm:p-4 text-sm sm:max-w-[70%] max-w-[85%] shadow-md backdrop-blur-sm transition-all duration-200 ease-in-out",
   {
     variants: {
       isUser: {
@@ -124,7 +124,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   return (
     <div className={cn("flex flex-col", isUser ? "items-end" : "items-start")}>
       {files ? (
-        <div className="mb-1 flex flex-wrap gap-2">
+        <div className="mb-1 flex flex-wrap gap-1 sm:gap-2">
           {files.map((file, index) => {
             return <FilePreview file={file} key={index} />
           })}
@@ -137,7 +137,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         </div>
 
         {role === "assistant" && actions ? (
-          <div className="absolute -bottom-4 right-2 flex space-x-1 rounded-lg border bg-background/90 backdrop-blur-sm p-1 text-foreground opacity-0 transition-opacity group-hover/message:opacity-100 shadow-md">
+          <div className="absolute -bottom-3 sm:-bottom-4 right-1 sm:right-2 flex space-x-1 rounded-lg border bg-background/90 backdrop-blur-sm p-0.5 sm:p-1 text-foreground opacity-0 transition-opacity group-hover/message:opacity-100 shadow-md">
             {actions}
           </div>
         ) : null}
@@ -147,7 +147,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         <time
           dateTime={typeof createdAt === 'string' ? createdAt : createdAt?.toISOString()}
           className={cn(
-            "mt-1 block px-1 text-xs opacity-50",
+            "mt-1 block px-1 text-[10px] sm:text-xs opacity-50",
             animation !== "none" && "duration-500 animate-in fade-in-0"
           )}
         >

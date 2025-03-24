@@ -19,7 +19,7 @@ const MessageSchema = new Schema({
 
 const ChatSessionSchema = new Schema({
   userId: {
-    type: Schema.Types.ObjectId,
+    type: Schema.Types.Mixed,
     ref: 'User',
     required: true
   },

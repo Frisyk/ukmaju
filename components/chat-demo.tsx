@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useChat, type UseChatOptions } from "ai/react";
 import { Bot, MessagesSquare, LogOut } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
@@ -19,6 +19,9 @@ type ChatDemoProps = {
 export function ChatDemo(props: ChatDemoProps) {
   const { data: session } = useSession();
   const [messagesLoaded, setMessagesLoaded] = useState(false);
+  const savePendingRef = useRef(false);
+  const lastSaveTimeRef = useRef(0);
+  const messagesRef = useRef<Message[]>([]);
 
   const {
     sessions,
@@ -66,14 +69,17 @@ export function ChatDemo(props: ChatDemoProps) {
           });
         }
         
-        // Simpan pesan ke MongoDB setelah menerima respons dari assistant
-        // Tunggu sebentar agar pesan assistant terbaru sudah tersimpan di state messages
-        setTimeout(() => {
-          saveMessagesToDatabase(currentSessionId, messages);
-        }, 300); // Tunggu lebih lama untuk pastikan respons assistant sudah lengkap
+        // Jadwalkan penyimpanan pesan setelah streaming selesai
+        // tanpa memblokir UI
+        queueMessageSave(currentSessionId);
       }
     },
   });
+
+  // Simpan referensi ke messages terbaru
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // Fungsi untuk meng-override handleSubmit default agar bisa menyimpan pesan user
   const customHandleSubmit = (
@@ -89,55 +95,51 @@ export function ChatDemo(props: ChatDemoProps) {
     handleSubmit(event, options);
   };
 
-  // Simpan pesan ke MongoDB
-  const saveMessagesToDatabase = async (sessionId: string, chatMessages: Message[]) => {
-    try {
-      // Cari pesan terbaru
-      if (chatMessages.length === 0) return;
-      
-      // Tambahkan ID tracking untuk menghindari duplikasi
-      const savedMessageIds = new Set<string>();
-      
-      // Proses semua pesan yang belum disimpan
-      for (const message of chatMessages) {
-        // Skip jika pesan sudah pernah disimpan (berdasarkan ID)
-        if (savedMessageIds.has(message.id)) continue;
-        
-        // Catat ID pesan yang akan disimpan
-        savedMessageIds.add(message.id);
-        
-        // Simpan pesan ke MongoDB
-        await fetch(`/api/chat-sessions/${sessionId}/messages`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ message }),
-        });
-      }
-
-      // Sinkronisasi ke MongoDB jika menggunakan sessionId UUID
-      if (sessionId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionId)) {
-        synchronizeWithMongoDB(sessionId);
-      }
-    } catch (error) {
-      console.error('Error saving messages:', error);
+  // Antrian penyimpanan pesan dengan throttling
+  const queueMessageSave = (sessionId: string) => {
+    const now = Date.now();
+    const timeSinceLastSave = now - lastSaveTimeRef.current;
+    
+    // Jika sudah ada penyimpanan tertunda atau interval terlalu pendek, jangan jadwalkan lagi
+    if (savePendingRef.current || (timeSinceLastSave < 2000 && lastSaveTimeRef.current !== 0)) {
+      return;
     }
+    
+    // Tandai bahwa ada penyimpanan tertunda
+    savePendingRef.current = true;
+    
+    // Jadwalkan penyimpanan dengan setTimeout
+    setTimeout(() => {
+      const messagesSnapshot = messagesRef.current;
+      if (sessionId && messagesSnapshot.length > 0) {
+        saveMessagesToLocalStorage(sessionId, messagesSnapshot).finally(() => {
+          // Setelah selesai, reset flag dan perbarui timestamp
+          savePendingRef.current = false;
+          lastSaveTimeRef.current = Date.now();
+        });
+      } else {
+        savePendingRef.current = false;
+      }
+    }, 1000);
   };
 
-  // Fungsi untuk menyinkronkan data dari memory storage ke MongoDB
-  const synchronizeWithMongoDB = async (sessionId: string) => {
+  // Simpan pesan ke local storage
+  const saveMessagesToLocalStorage = async (sessionId: string, chatMessages: Message[]) => {
+    if (chatMessages.length === 0) return;
+    
     try {
-      const response = await fetch(`/api/chat-sessions/${sessionId}/sync-to-mongodb`, {
+      // Simpan pesan ke memory storage melalui API secara asinkron
+      await fetch(`/api/chat-sessions/${sessionId}/messages`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          messages: chatMessages 
+        }),
       });
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Data berhasil disinkronkan ke MongoDB:', result);
-      }
     } catch (error) {
-      console.error('Error sinkronisasi dengan MongoDB:', error);
+      console.error('Error saving messages:', error);
     }
   };
 
@@ -145,51 +147,36 @@ export function ChatDemo(props: ChatDemoProps) {
   useEffect(() => {
     const handleBeforeSessionSwitch = (event: CustomEvent<{ fromSessionId: string | null, toSessionId: string }>) => {
       const { fromSessionId } = event.detail;
-      if (fromSessionId && messages.length > 0) {
-        saveMessagesToDatabase(fromSessionId, messages);
+      if (fromSessionId && messagesRef.current.length > 0) {
+        saveMessagesToLocalStorage(fromSessionId, messagesRef.current);
       }
     };
     
-    // Tambahkan event listener untuk event perpindahan sesi
     window.addEventListener('beforeSessionSwitch', handleBeforeSessionSwitch as EventListener);
     
-    // Cleanup listener
     return () => {
       window.removeEventListener('beforeSessionSwitch', handleBeforeSessionSwitch as EventListener);
     };
-  }, [messages]);
+  }, []);
 
-  // Tambahkan useEffect untuk menyimpan pesan sebelum berpindah chat atau menutup halaman
+  // Simpan pesan saat akan menutup halaman
   useEffect(() => {
-    // Fungsi untuk menyimpan pesan terakhir
     const saveLatestMessages = () => {
-      if (currentSessionId && messages.length > 0) {
-        saveMessagesToDatabase(currentSessionId, messages);
+      if (currentSessionId && messagesRef.current.length > 0) {
+        // Menggunakan sendBeacon untuk penyimpanan yang tidak memblokir navigasi
+        const blob = new Blob([JSON.stringify({ messages: messagesRef.current })], { type: 'application/json' });
+        navigator.sendBeacon(`/api/chat-sessions/${currentSessionId}/messages`, blob);
       }
     };
     
-    // Simpan pesan saat menutup halaman/browser
     window.addEventListener('beforeunload', saveLatestMessages);
     
-    // Cleanup listener
     return () => {
       window.removeEventListener('beforeunload', saveLatestMessages);
     };
-  }, [currentSessionId, messages]);
+  }, [currentSessionId]);
 
-  // Tambahkan useEffect untuk menyimpan secara real-time dalam interval waktu
-  useEffect(() => {
-    if (!currentSessionId || messages.length === 0) return;
-    
-    // Simpan pesan secara periodik (5 detik)
-    const intervalId = setInterval(() => {
-      saveMessagesToDatabase(currentSessionId, messages);
-    }, 5000);
-    
-    return () => clearInterval(intervalId);
-  }, [currentSessionId, messages]);
-
-  // Load messages dari MongoDB ketika session berubah
+  // Load messages dari memory storage ketika session berubah
   useEffect(() => {
     const fetchMessages = async () => {
       if (!currentSessionId) return;
@@ -221,16 +208,6 @@ export function ChatDemo(props: ChatDemoProps) {
     fetchMessages();
   }, [currentSessionId, setMessages]);
 
-  // Tambahkan useEffect untuk melakukan sinkronisasi saat halaman dimuat
-  useEffect(() => {
-    if (currentSessionId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentSessionId)) {
-      // Lakukan sinkronisasi ketika komponen dimuat
-      setTimeout(() => {
-        synchronizeWithMongoDB(currentSessionId);
-      }, 1000); // Tunggu sebentar untuk memastikan semua data telah dimuat
-    }
-  }, [currentSessionId]);
-
   const handleNewSession = () => {
     createNewSession();
   };
@@ -241,20 +218,12 @@ export function ChatDemo(props: ChatDemoProps) {
     }
   };
   
-  // Modifikasi fungsi handleSignOut untuk menyinkronkan data sebelum keluar
-  const handleSignOut = async () => {
-    if (currentSessionId) {
-      try {
-        // Simpan pesan terakhir
-        await saveMessagesToDatabase(currentSessionId, messages);
-        
-        // Sinkronkan ke MongoDB jika menggunakan UUID
-        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentSessionId)) {
-          await synchronizeWithMongoDB(currentSessionId);
-        }
-      } catch (error) {
-        console.error('Error sebelum sign out:', error);
-      }
+  // Fungsi handleSignOut yang lebih sederhana
+  const handleSignOut = () => {
+    if (currentSessionId && messagesRef.current.length > 0) {
+      // Simpan pesan secara asinkron dan lanjutkan proses logout
+      const blob = new Blob([JSON.stringify({ messages: messagesRef.current })], { type: 'application/json' });
+      navigator.sendBeacon(`/api/chat-sessions/${currentSessionId}/messages`, blob);
     }
     
     // Lakukan sign out
@@ -274,34 +243,34 @@ export function ChatDemo(props: ChatDemoProps) {
 
       <div className="flex flex-col flex-1 h-screen overflow-hidden">
         {/* Header */}
-        <div className="bg-background/80 dark:bg-background/50 backdrop-blur-md border-b border-border/40 p-4 sticky top-0 z-10 shadow-sm">
+        <div className="bg-background/80 dark:bg-background/50 backdrop-blur-md border-b border-border/40 p-2 sm:p-4 sticky top-0 z-10 shadow-sm">
           <div className="flex items-center justify-between max-w-7xl mx-auto">
             <div className="flex items-center gap-2">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bot className="h-5 w-5 text-primary" />
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold">UKM Maju</h1>
-                <p className="text-xs text-muted-foreground">AI Assistant untuk Pengembangan UKM Indonesia</p>
+                <h1 className="text-base sm:text-lg font-semibold">UKM Maju</h1>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">AI Assistant untuk Pengembangan UKM Indonesia</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="mr-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="hidden sm:block mr-2 text-xs text-muted-foreground">
                 {session?.user?.email}
               </div>
               <button
                 onClick={handleNewSession}
-                className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="flex items-center gap-1 text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
-                <MessagesSquare className="h-4 w-4" /> 
-                <span>Chat Baru</span>
+                <MessagesSquare className="h-3 w-3 sm:h-4 sm:w-4" /> 
+                <span className="hidden xs:inline">Chat Baru</span>
               </button>
               <button
                 onClick={handleSignOut}
-                className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+                className="flex items-center gap-1 text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-md bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
               >
-                <LogOut className="h-4 w-4" /> 
-                <span>Keluar</span>
+                <LogOut className="h-3 w-3 sm:h-4 sm:w-4" /> 
+                <span className="hidden xs:inline">Keluar</span>
               </button>
             </div>
           </div>

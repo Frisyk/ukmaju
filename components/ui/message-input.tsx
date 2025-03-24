@@ -172,7 +172,7 @@ export function MessageInput({
         onPaste={onPaste}
         onKeyDown={onKeyDown}
         className={cn(
-          "z-10 mb-5 w-full grow resize-none rounded-2xl border border-input dark:border-accent/20 bg-background/90 dark:bg-background/40 backdrop-blur-sm p-4 pr-24 text-sm ring-offset-background transition-all duration-200 shadow-md focus-visible:border-primary focus-visible:shadow-lg focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          "z-10 mb-5 w-full grow resize-none rounded-2xl border border-input dark:border-accent/20 bg-background/90 dark:bg-background/40 backdrop-blur-sm p-3 sm:p-4 pr-16 sm:pr-24 text-sm ring-offset-background transition-all duration-200 shadow-md focus-visible:border-primary focus-visible:shadow-lg focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
           "dark:focus-visible:shadow-[0_0_15px_rgba(var(--primary)/0.3)]",
           "placeholder:text-muted-foreground/70 dark:placeholder:text-muted-foreground/50",
           showFileList && "pb-16",
@@ -184,8 +184,8 @@ export function MessageInput({
       />
 
       {props.allowAttachments && (
-        <div className="absolute inset-x-3 bottom-0 z-20 py-3">
-          <div className="flex space-x-3">
+        <div className="absolute inset-x-2 sm:inset-x-3 bottom-0 z-20 py-2 sm:py-3">
+          <div className="flex space-x-2 sm:space-x-3 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent">
             <AnimatePresence mode="popLayout">
               {props.files?.map((file) => {
                 return (
@@ -211,26 +211,26 @@ export function MessageInput({
         </div>
       )}
 
-      <div className="absolute right-3 top-3 z-20 flex gap-2">
+      <div className="absolute right-2 sm:right-3 top-2 sm:top-3 z-20 flex gap-1 sm:gap-2">
         {isGenerating && stop ? (
           <Button
             type="button"
             size="icon"
-            className="h-10 w-10 rounded-full shadow-md transition-all duration-200 hover:shadow-lg dark:bg-accent/80 dark:text-accent-foreground"
+            className="h-8 w-8 sm:h-10 sm:w-10 rounded-full shadow-md transition-all duration-200 hover:shadow-lg dark:bg-accent/80 dark:text-accent-foreground"
             aria-label="Stop generating"
             onClick={stop}
           >
-            <Square className="h-4 w-4 animate-pulse" fill="currentColor" />
+            <Square className="h-3 w-3 sm:h-4 sm:w-4 animate-pulse" fill="currentColor" />
           </Button>
         ) : (
           <Button
             type="submit"
             size="icon"
-            className="h-10 w-10 rounded-full shadow-md transition-all duration-200 hover:shadow-lg disabled:opacity-30 dark:disabled:bg-muted/20 disabled:cursor-not-allowed"
+            className="h-8 w-8 sm:h-10 sm:w-10 rounded-full shadow-md transition-all duration-200 hover:shadow-lg disabled:opacity-30 dark:disabled:bg-muted/20 disabled:cursor-not-allowed"
             aria-label="Send message"
             disabled={props.value === "" || isGenerating}
           >
-            <ArrowUp className="h-5 w-5" />
+            <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         )}
       </div>
